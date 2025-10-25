@@ -2,17 +2,24 @@
 
 A browser extension that removes distracting content from Facebook to help you stay focused.
 
+<div align="center"><img src="Screenshot.png" width="300" alt="Extension Screenshot">
+<br><i>Extension popup showing all available customization options</i>
+</div>
+
 ---
 
 ## 🎯 Features
 
+- **Time Tracker** - Floating timer showing daily Facebook usage (auto-resets at midnight)
+- **Grayscale Mode** - Black and white view for less distraction
 - **Hide Reels** - Remove Reels carousel from feed
 - **Hide Stories** - Remove Stories section
+- **Hide Sponsored Posts** - Remove sponsored/ad content
+- **Hide Marketplace** - Remove Marketplace navigation
+- **Hide Watch** - Remove Watch tab
+- **Hide Gaming** - Remove Gaming tab
 - **Hide Suggested Posts** - Remove "Suggested for you" content
 - **Hide People Suggestions** - Remove "People you may know"
-- **Clean Navigation** - Hide Marketplace, Watch, and Gaming tabs
-- **Grayscale Mode** - Black and white view for less distraction
-- **Time Tracker** - Floating timer showing daily Facebook usage (auto-resets at midnight)
 - **Customizable** - Toggle any feature on/off from popup menu
 
 ---
@@ -72,7 +79,5 @@ Stored on your device only:
 ## 📝 Project Info
 
 **Developer:** Me with Claude.Ai
-**Last Updated:** October 25, 2025
+**Last Updated:** October 26, 2025
 **Contact:** junayedjihad48@gmail.com
-
----

@@ -1,4 +1,3 @@
-// Default settings
 const defaultSettings = {
   showTimer: true,
   grayscale: true,
@@ -12,34 +11,51 @@ const defaultSettings = {
   peopleYouMayKnow: true
 };
 
-// Load saved settings
+let statusTimeout = null;
+
 chrome.storage.sync.get(defaultSettings, (settings) => {
-  // Set toggle states based on saved settings
-  Object.keys(settings).forEach(key => {
+  if (!settings || typeof settings !== 'object') {
+    settings = defaultSettings;
+  }
+  
+  Object.keys(defaultSettings).forEach(key => {
     const toggle = document.querySelector(`[data-option="${key}"]`);
-    if (toggle && settings[key]) {
+    if (toggle && settings.hasOwnProperty(key) && typeof settings[key] === 'boolean' && settings[key]) {
       toggle.classList.add('active');
     }
   });
 });
 
-// Handle toggle clicks
 document.querySelectorAll('.toggle').forEach(toggle => {
   toggle.addEventListener('click', () => {
     const option = toggle.dataset.option;
+    
+    if (!defaultSettings.hasOwnProperty(option)) {
+      console.error('Invalid option:', option);
+      return;
+    }
+    
     const isActive = toggle.classList.toggle('active');
 
-    // Save setting
     chrome.storage.sync.set({ [option]: isActive }, () => {
-      // Show status message
       const status = document.getElementById('status');
-      status.classList.add('show');
-      setTimeout(() => status.classList.remove('show'), 2000);
+      if (status) {
+        if (statusTimeout) {
+          clearTimeout(statusTimeout);
+        }
+        
+        status.classList.add('show');
+        
+        statusTimeout = setTimeout(() => {
+          status.classList.remove('show');
+          statusTimeout = null;
+        }, 2000);
+      }
 
-      // Notify content script to update
       chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-        if (tabs[0]) {
-          chrome.tabs.sendMessage(tabs[0].id, {action: 'updateSettings'});
+        if (tabs[0] && tabs[0].id) {
+          chrome.tabs.sendMessage(tabs[0].id, {action: 'updateSettings'}).catch(() => {
+          });
         }
       });
     });
