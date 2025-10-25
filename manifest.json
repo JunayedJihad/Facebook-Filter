@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Facebook Filter",
-  "version": "2.0",
+  "version": "2.1",
   "description": "Customize what to hide from Facebook newsfeed",
   "permissions": ["storage", "activeTab", "alarms"],
   "action": {

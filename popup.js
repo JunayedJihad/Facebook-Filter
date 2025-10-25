@@ -4,6 +4,7 @@ const defaultSettings = {
   grayscale: true,
   reels: true,
   stories: true,
+  sponsored: true,
   marketplace: true,
   watch: true,
   games: true,

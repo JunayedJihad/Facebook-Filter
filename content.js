@@ -5,6 +5,7 @@ let settings = {
   grayscale: true,
   reels: true,
   stories: true,
+  sponsored: true,
   marketplace: true,
   watch: true,
   games: true,
@@ -61,7 +62,6 @@ function createTimer() {
   timerElement = document.createElement('div');
   timerElement.id = 'fb-time-tracker';
   timerElement.innerHTML = `
-   
     <div class="timer-text">
       <span class="timer-label">Time Today</span>
       <span class="timer-value">0:00:00</span>
@@ -181,6 +181,22 @@ function containsText(element, keywords) {
 }
 
 function hideContent() {
+  // Hide Sponsored Posts
+  if (settings.sponsored) {
+    document.querySelectorAll('[role="article"]').forEach(article => {
+      if (article.hasAttribute('data-sponsored-hidden')) return;
+
+      // Look for "Sponsored" text in the post
+      const sponsoredLinks = article.querySelectorAll('a[href*="/ads/"]');
+      const hasSponsored = containsText(article, ['Sponsored', 'স্পন্সরড']);
+
+      if (sponsoredLinks.length > 0 || hasSponsored) {
+        article.style.display = 'none';
+        article.setAttribute('data-sponsored-hidden', 'true');
+      }
+    });
+  }
+
   // Hide Reels section with JavaScript as backup to CSS
   if (settings.reels) {
     // Find and hide all elements that contain "Reels" text exactly
