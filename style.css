@@ -1,20 +1,21 @@
+/* Import Inter font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 /* Dynamic styles controlled by settings */
 html.fb-grayscale {
   filter: grayscale(100%) !important;
   -webkit-filter: grayscale(100%) !important;
 }
 
-/* Force hide Reels when enabled */
 html.fb-hide-reels [aria-label*="Reels"],
-html.fb-hide-reels [aria-label*="reels"],
-html.fb-hide-reels a[href*="/reel/"],
-html.fb-hide-reels a[href*="/reels/"] {
+html.fb-hide-reels [aria-label*="reels"] {
   display: none !important;
 }
 
-/* Hide Reels containers */
-html.fb-hide-reels [role="article"]:has(a[href*="/reel/"]),
-html.fb-hide-reels [role="article"]:has(a[href*="/reels/"]) {
+html.fb-hide-reels nav a[href*="/reel/"],
+html.fb-hide-reels nav a[href*="/reels/"],
+html.fb-hide-reels [role="navigation"] a[href*="/reel/"],
+html.fb-hide-reels [role="navigation"] a[href*="/reels/"] {
   display: none !important;
 }
 
@@ -25,11 +26,11 @@ html.fb-hide-reels [role="article"]:has(a[href*="/reels/"]) {
   left: 50%;
   transform: translateX(-50%);
   z-index: 999999;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0866ff;
   color: white;
   padding: 10px 20px;
   border-radius: 50px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   font-size: 14px;
   font-weight: 600;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);

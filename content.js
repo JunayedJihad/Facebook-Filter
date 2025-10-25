@@ -1,5 +1,3 @@
-// Facebook Content Hider with customizable options and time tracker
-
 let settings = {
   showTimer: true,
   grayscale: true,
@@ -13,26 +11,30 @@ let settings = {
   peopleYouMayKnow: true
 };
 
-// Timer variables
 let timeSpentToday = 0;
 let timerInterval = null;
 let timerElement = null;
 let isTabActive = true;
 
-// Load settings from storage
 function loadSettings(callback) {
   chrome.storage.sync.get(settings, (loadedSettings) => {
-    settings = loadedSettings;
+    const validSettings = {};
+    for (const key in settings) {
+      if (loadedSettings.hasOwnProperty(key) && typeof loadedSettings[key] === 'boolean') {
+        validSettings[key] = loadedSettings[key];
+      } else {
+        validSettings[key] = settings[key];
+      }
+    }
+    settings = validSettings;
     if (callback) callback();
   });
 }
 
-// Load time spent from storage
 function loadTimeSpent() {
   chrome.storage.local.get(['timeSpentToday', 'lastResetDate'], (result) => {
     const today = new Date().toDateString();
 
-    // Reset if it's a new day
     if (result.lastResetDate !== today) {
       timeSpentToday = 0;
       chrome.storage.local.set({
@@ -40,14 +42,14 @@ function loadTimeSpent() {
         lastResetDate: today
       });
     } else {
-      timeSpentToday = result.timeSpentToday || 0;
+      const time = result.timeSpentToday || 0;
+      timeSpentToday = (typeof time === 'number' && time >= 0 && time < 86400) ? Math.floor(time) : 0;
     }
 
     updateTimerDisplay();
   });
 }
 
-// Save time spent to storage
 function saveTimeSpent() {
   chrome.storage.local.set({
     timeSpentToday: timeSpentToday,
@@ -55,22 +57,30 @@ function saveTimeSpent() {
   });
 }
 
-// Create timer element
 function createTimer() {
   if (timerElement) return;
 
   timerElement = document.createElement('div');
   timerElement.id = 'fb-time-tracker';
-  timerElement.innerHTML = `
-    <div class="timer-text">
-      <span class="timer-label">Time Today</span>
-      <span class="timer-value">0:00:00</span>
-    </div>
-  `;
+  
+  const timerText = document.createElement('div');
+  timerText.className = 'timer-text';
+  
+  const timerLabel = document.createElement('span');
+  timerLabel.className = 'timer-label';
+  timerLabel.textContent = 'Time Today';
+  
+  const timerValue = document.createElement('span');
+  timerValue.className = 'timer-value';
+  timerValue.textContent = '0:00:00';
+  
+  timerText.appendChild(timerLabel);
+  timerText.appendChild(timerValue);
+  timerElement.appendChild(timerText);
+  
   document.body.appendChild(timerElement);
 }
 
-// Remove timer element
 function removeTimer() {
   if (timerElement) {
     timerElement.remove();
@@ -78,7 +88,6 @@ function removeTimer() {
   }
 }
 
-// Format seconds to HH:MM:SS
 function formatTime(seconds) {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -86,7 +95,6 @@ function formatTime(seconds) {
   return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-// Update timer display
 function updateTimerDisplay() {
   if (timerElement) {
     const timeValue = timerElement.querySelector('.timer-value');
@@ -96,7 +104,6 @@ function updateTimerDisplay() {
   }
 }
 
-// Start timer
 function startTimer() {
   if (timerInterval) return;
 
@@ -105,7 +112,6 @@ function startTimer() {
       timeSpentToday++;
       updateTimerDisplay();
 
-      // Save every 10 seconds
       if (timeSpentToday % 10 === 0) {
         saveTimeSpent();
       }
@@ -113,7 +119,6 @@ function startTimer() {
   }, 1000);
 }
 
-// Stop timer
 function stopTimer() {
   if (timerInterval) {
     clearInterval(timerInterval);
@@ -122,7 +127,6 @@ function stopTimer() {
   }
 }
 
-// Handle visibility change
 document.addEventListener('visibilitychange', () => {
   isTabActive = !document.hidden;
   if (!isTabActive) {
@@ -130,12 +134,10 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// Handle page unload
 window.addEventListener('beforeunload', () => {
   saveTimeSpent();
 });
 
-// Initialize timer
 function initializeTimer() {
   if (settings.showTimer) {
     createTimer();
@@ -147,7 +149,6 @@ function initializeTimer() {
   }
 }
 
-// Apply grayscale
 function applyGrayscale() {
   if (settings.grayscale) {
     document.documentElement.classList.add('fb-grayscale');
@@ -156,7 +157,6 @@ function applyGrayscale() {
   }
 }
 
-// Apply CSS class for hiding reels
 function applyReelsHiding() {
   if (settings.reels) {
     document.documentElement.classList.add('fb-hide-reels');
@@ -165,7 +165,6 @@ function applyReelsHiding() {
   }
 }
 
-// Check if element contains text
 function containsText(element, keywords) {
   try {
     const text = element.textContent || element.innerText || '';
@@ -175,18 +174,15 @@ function containsText(element, keywords) {
       }
     }
   } catch (e) {
-    // Ignore errors
   }
   return false;
 }
 
 function hideContent() {
-  // Hide Sponsored Posts
   if (settings.sponsored) {
     document.querySelectorAll('[role="article"]').forEach(article => {
       if (article.hasAttribute('data-sponsored-hidden')) return;
 
-      // Look for "Sponsored" text in the post
       const sponsoredLinks = article.querySelectorAll('a[href*="/ads/"]');
       const hasSponsored = containsText(article, ['Sponsored', 'স্পন্সরড']);
 
@@ -197,14 +193,10 @@ function hideContent() {
     });
   }
 
-  // Hide Reels section with JavaScript as backup to CSS
   if (settings.reels) {
-    // Find and hide all elements that contain "Reels" text exactly
     document.querySelectorAll('*').forEach(el => {
-      // Skip if already processed or if it's our timer
       if (el.id === 'fb-time-tracker' || el.hasAttribute('data-fb-checked')) return;
 
-      // Check direct text content only (not nested)
       let hasReelsText = false;
       for (let node of el.childNodes) {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -217,13 +209,11 @@ function hideContent() {
       }
 
       if (hasReelsText) {
-        // Find parent container
         let container = el;
         for (let i = 0; i < 10; i++) {
           if (!container.parentElement) break;
           container = container.parentElement;
 
-          // Check if this is a major container
           const role = container.getAttribute('role');
           const hasPagelet = container.hasAttribute('data-pagelet');
 
@@ -238,16 +228,33 @@ function hideContent() {
       el.setAttribute('data-fb-checked', 'true');
     });
 
-    // Hide any link to reels
     document.querySelectorAll('a[href*="/reel/"], a[href*="/reels"]').forEach(link => {
+      const inNav = link.closest('[role="navigation"]') || link.closest('nav');
+      
+      if (inNav) {
+        let navContainer = link.closest('[role="navigation"]') || link.closest('nav');
+        let parent = link.parentElement;
+        if (parent) {
+          parent.style.display = 'none';
+        }
+        return;
+      }
+
       let container = link;
+      let foundArticle = false;
+      
       for (let i = 0; i < 10; i++) {
         if (!container.parentElement) break;
         container = container.parentElement;
 
         const role = container.getAttribute('role');
-        if (role === 'article' || container.hasAttribute('data-pagelet')) {
-          if (!container.hasAttribute('data-reel-hidden')) {
+        if (role === 'article') {
+          foundArticle = true;
+          
+          const hasReelsLabel = containsText(container, ['Reels', 'reel']) && 
+                                 !container.hasAttribute('data-reel-hidden');
+          
+          if (hasReelsLabel) {
             container.style.display = 'none';
             container.setAttribute('data-reel-hidden', 'true');
           }
@@ -257,7 +264,6 @@ function hideContent() {
     });
   }
 
-  // Hide Stories
   if (settings.stories) {
     document.querySelectorAll('[aria-label*="Stories"], [aria-label*="Create a story"]').forEach(el => {
       if (el.hasAttribute('data-story-hidden')) return;
@@ -293,7 +299,6 @@ function hideContent() {
     });
   }
 
-  // Hide "Suggested for you" posts
   if (settings.suggested) {
     document.querySelectorAll('[role="article"]').forEach(article => {
       if (article.hasAttribute('data-suggested-hidden')) return;
@@ -305,7 +310,6 @@ function hideContent() {
     });
   }
 
-  // Hide "People you may know" sections
   if (settings.peopleYouMayKnow) {
     document.querySelectorAll('[role="article"]').forEach(article => {
       if (article.hasAttribute('data-pymk-hidden')) return;
@@ -317,7 +321,6 @@ function hideContent() {
     });
   }
 
-  // Hide navigation items
   if (!document.body.hasAttribute('data-nav-hidden')) {
     const navAreas = document.querySelectorAll('[role="navigation"], nav, [data-pagelet*="LeftRail"]');
 
@@ -353,11 +356,22 @@ function hideContent() {
   }
 }
 
-// Initialize
+function blockReelAccess() {
+  if (settings.reels) {
+    const currentUrl = window.location.href;
+    if (currentUrl.startsWith('https://www.facebook.com/') || currentUrl.startsWith('https://facebook.com/')) {
+      if (currentUrl.includes('/reel/') || currentUrl.includes('/reels/') || currentUrl.includes('/reels')) {
+        window.location.replace('https://www.facebook.com/');
+      }
+    }
+  }
+}
+
 loadSettings(() => {
   applyGrayscale();
   applyReelsHiding();
   initializeTimer();
+  blockReelAccess();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', hideContent);
@@ -366,19 +380,28 @@ loadSettings(() => {
   }
 });
 
-// Listen for settings updates
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'updateSettings') {
+  if (request && typeof request.action === 'string' && request.action === 'updateSettings') {
     loadSettings(() => {
       applyGrayscale();
       applyReelsHiding();
       initializeTimer();
+      blockReelAccess();
       location.reload();
     });
   }
+  return true;
 });
 
-// More aggressive observer
+let lastUrl = location.href;
+new MutationObserver(() => {
+  const currentUrl = location.href;
+  if (currentUrl !== lastUrl) {
+    lastUrl = currentUrl;
+    blockReelAccess();
+  }
+}).observe(document, { subtree: true, childList: true });
+
 const observer = new MutationObserver(() => {
   hideContent();
 });
@@ -391,7 +414,6 @@ setTimeout(() => {
   });
 }, 1000);
 
-// Run frequently
 setInterval(hideContent, 1000);
 
 console.log('Facebook Content Hider: Active with custom settings and time tracker');

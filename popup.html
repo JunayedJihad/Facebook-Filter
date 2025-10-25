@@ -2,65 +2,88 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body {
-      width: 320px;
-      padding: 16px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      width: 300px;
+      padding: 12px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
       margin: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #0866ff;
     }
 
     .container {
       background: white;
       border-radius: 12px;
-      padding: 20px;
+      padding: 16px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
 
     h1 {
-      margin: 0 0 20px 0;
-      font-size: 20px;
-      color: #333;
+      margin: 0 0 16px 0;
+      font-size: 18px;
+      color: #0866ff;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    h1 img {
+      width: 24px;
+      height: 24px;
     }
 
     .option {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 0;
+      padding: 10px 0;
+    }
+
+    .option:not(:last-of-type) {
       border-bottom: 1px solid #f0f0f0;
     }
 
-    .option:last-child {
-      border-bottom: none;
-    }
-
     .option-label {
-      font-size: 14px;
+      font-size: 13px;
       color: #444;
       font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .option-icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+      color: #0866ff;
     }
 
     .toggle {
       position: relative;
-      width: 50px;
-      height: 26px;
+      width: 44px;
+      height: 24px;
       background: #ccc;
-      border-radius: 13px;
+      border-radius: 12px;
       cursor: pointer;
       transition: background 0.3s;
+      flex-shrink: 0;
     }
 
     .toggle.active {
-      background: #667eea;
+      background: #0866ff;
     }
 
     .toggle-circle {
       position: absolute;
-      top: 3px;
-      left: 3px;
+      top: 2px;
+      left: 2px;
       width: 20px;
       height: 20px;
       background: white;
@@ -69,18 +92,18 @@
     }
 
     .toggle.active .toggle-circle {
-      left: 27px;
+      left: 22px;
     }
 
     .status {
-      margin-top: 16px;
-      padding: 10px;
-      background: #f0fdf4;
-      border: 1px solid #86efac;
+      margin-top: 12px;
+      padding: 8px;
+      background: #e7f3ff;
+      border: 1px solid #0866ff;
       border-radius: 6px;
       text-align: center;
-      font-size: 13px;
-      color: #166534;
+      font-size: 12px;
+      color: #0866ff;
       display: none;
     }
 
@@ -91,79 +114,110 @@
 </head>
 <body>
   <div class="container">
-    <h1>Facebook Content Control</h1>
+    <h1><img src="icon.png" alt="Icon"> Facebook Content Filter</h1>
+
+    <div class="status" id="status">Settings saved!</div>
 
     <div class="option">
-      <span class="option-label"> Show Time Tracker</span>
+      <span class="option-label">
+        <i class="fas fa-clock option-icon"></i>
+        Time Tracker
+      </span>
       <div class="toggle" data-option="showTimer">
         <div class="toggle-circle"></div>
       </div>
     </div>
 
     <div class="option">
-      <span class="option-label">Grayscale Mode</span>
+      <span class="option-label">
+        <i class="fas fa-palette option-icon"></i>
+        Grayscale Mode
+      </span>
       <div class="toggle" data-option="grayscale">
         <div class="toggle-circle"></div>
       </div>
     </div>
 
     <div class="option">
-      <span class="option-label">Hide Reels</span>
+      <span class="option-label">
+        <i class="fas fa-film option-icon"></i>
+        Hide Reels
+      </span>
       <div class="toggle" data-option="reels">
         <div class="toggle-circle"></div>
       </div>
     </div>
 
     <div class="option">
-      <span class="option-label">Hide Stories</span>
+      <span class="option-label">
+        <i class="fas fa-book option-icon"></i>
+        Hide Stories
+      </span>
       <div class="toggle" data-option="stories">
         <div class="toggle-circle"></div>
       </div>
     </div>
 
     <div class="option">
-      <span class="option-label">Hide Sponsored Posts</span>
+      <span class="option-label">
+        <i class="fas fa-ad option-icon"></i>
+        Hide Sponsored
+      </span>
       <div class="toggle" data-option="sponsored">
         <div class="toggle-circle"></div>
       </div>
     </div>
 
     <div class="option">
-      <span class="option-label">Hide Marketplace</span>
+      <span class="option-label">
+        <i class="fas fa-store option-icon"></i>
+        Hide Marketplace
+      </span>
       <div class="toggle" data-option="marketplace">
         <div class="toggle-circle"></div>
       </div>
     </div>
 
     <div class="option">
-      <span class="option-label">Hide Watch/Video Tab</span>
+      <span class="option-label">
+        <i class="fas fa-tv option-icon"></i>
+        Hide Watch
+      </span>
       <div class="toggle" data-option="watch">
         <div class="toggle-circle"></div>
       </div>
     </div>
 
     <div class="option">
-      <span class="option-label">Hide Gaming/Games</span>
+      <span class="option-label">
+        <i class="fas fa-gamepad option-icon"></i>
+        Hide Gaming
+      </span>
       <div class="toggle" data-option="games">
         <div class="toggle-circle"></div>
       </div>
     </div>
 
     <div class="option">
-      <span class="option-label">Hide "Suggested for you"</span>
+      <span class="option-label">
+        <i class="fas fa-magic option-icon"></i>
+        Hide Suggested
+      </span>
       <div class="toggle" data-option="suggested">
         <div class="toggle-circle"></div>
       </div>
     </div>
 
-    <div class="option">
-      <span class="option-label">Hide "People you may know"</span>
+    <div class="option" style="border-bottom: none !important;">
+      <span class="option-label">
+        <i class="fas fa-user-friends option-icon"></i>
+        Hide People You May Know
+      </span>
       <div class="toggle" data-option="peopleYouMayKnow">
         <div class="toggle-circle"></div>
       </div>
     </div>
 
-    <div class="status" id="status">Settings saved! Refresh Facebook to apply.</div>
   </div>
 
   <script src="popup.js"></script>
