@@ -1,9 +1,16 @@
-#For Chrome/Edge/Brave:
 
-1.Download the zip file from the 'Releases'
-2.Unzip the downloaded folder
-3.Go to chrome://extensions/ (or edge://extensions/)
-4.Enable "Developer mode" (toggle in top right)
-4.Click "Load unpacked"
-6.Select your "unzipper" folder
-7.That's it, Now enjoy your facebook...
+# For Chrome, Edge, Brave, and other Chromium browsers:
+
+1. **Download the extension**
+   - Click the green "Code" button above
+   - Select "Download ZIP"
+   - Extract the ZIP file to a folder on your computer
+
+2. **Load the extension**
+   - Open your browser and go to:
+     - Chrome: `chrome://extensions/`
+     - Edge: `edge://extensions/`
+     - Brave: `brave://extensions/`
+   - Enable "Developer mode" (toggle in top right corner)
+   - Click "Load unpacked"
+   - Select the extracted folder
