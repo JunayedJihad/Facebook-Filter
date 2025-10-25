@@ -1,6 +1,7 @@
-// Facebook Content Hider with customizable options
+// Facebook Content Hider with customizable options and time tracker
 
 let settings = {
+  showTimer: true,
   grayscale: true,
   reels: true,
   stories: true,
@@ -11,12 +12,139 @@ let settings = {
   peopleYouMayKnow: true
 };
 
+// Timer variables
+let timeSpentToday = 0;
+let timerInterval = null;
+let timerElement = null;
+let isTabActive = true;
+
 // Load settings from storage
 function loadSettings(callback) {
   chrome.storage.sync.get(settings, (loadedSettings) => {
     settings = loadedSettings;
     if (callback) callback();
   });
+}
+
+// Load time spent from storage
+function loadTimeSpent() {
+  chrome.storage.local.get(['timeSpentToday', 'lastResetDate'], (result) => {
+    const today = new Date().toDateString();
+
+    // Reset if it's a new day
+    if (result.lastResetDate !== today) {
+      timeSpentToday = 0;
+      chrome.storage.local.set({
+        timeSpentToday: 0,
+        lastResetDate: today
+      });
+    } else {
+      timeSpentToday = result.timeSpentToday || 0;
+    }
+
+    updateTimerDisplay();
+  });
+}
+
+// Save time spent to storage
+function saveTimeSpent() {
+  chrome.storage.local.set({
+    timeSpentToday: timeSpentToday,
+    lastResetDate: new Date().toDateString()
+  });
+}
+
+// Create timer element
+function createTimer() {
+  if (timerElement) return;
+
+  timerElement = document.createElement('div');
+  timerElement.id = 'fb-time-tracker';
+  timerElement.innerHTML = `
+
+    <div class="timer-text">
+      <span class="timer-label">Time Today</span>
+      <span class="timer-value">00:00:00</span>
+    </div>
+  `;
+  document.body.appendChild(timerElement);
+}
+
+// Remove timer element
+function removeTimer() {
+  if (timerElement) {
+    timerElement.remove();
+    timerElement = null;
+  }
+}
+
+// Format seconds to HH:MM:SS
+function formatTime(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Update timer display
+function updateTimerDisplay() {
+  if (timerElement) {
+    const timeValue = timerElement.querySelector('.timer-value');
+    if (timeValue) {
+      timeValue.textContent = formatTime(timeSpentToday);
+    }
+  }
+}
+
+// Start timer
+function startTimer() {
+  if (timerInterval) return;
+
+  timerInterval = setInterval(() => {
+    if (isTabActive && settings.showTimer) {
+      timeSpentToday++;
+      updateTimerDisplay();
+
+      // Save every 10 seconds
+      if (timeSpentToday % 10 === 0) {
+        saveTimeSpent();
+      }
+    }
+  }, 1000);
+}
+
+// Stop timer
+function stopTimer() {
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    saveTimeSpent();
+  }
+}
+
+// Handle visibility change
+document.addEventListener('visibilitychange', () => {
+  isTabActive = !document.hidden;
+  if (!isTabActive) {
+    saveTimeSpent();
+  }
+});
+
+// Handle page unload
+window.addEventListener('beforeunload', () => {
+  saveTimeSpent();
+});
+
+// Initialize timer
+function initializeTimer() {
+  if (settings.showTimer) {
+    createTimer();
+    loadTimeSpent();
+    startTimer();
+  } else {
+    removeTimer();
+    stopTimer();
+  }
 }
 
 // Apply grayscale
@@ -162,6 +290,7 @@ function hideContent() {
 loadSettings(() => {
   applyGrayscale();
   hideContent();
+  initializeTimer();
 });
 
 // Listen for settings updates
@@ -169,6 +298,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'updateSettings') {
     loadSettings(() => {
       applyGrayscale();
+      initializeTimer();
       // Reload page for changes to take effect
       location.reload();
     });
@@ -188,4 +318,4 @@ observer.observe(document.body, {
 // Run periodically as backup
 setInterval(hideContent, 1000);
 
-console.log('Facebook Content Hider: Active with custom settings');
+console.log('Facebook Content Hider: Active with custom settings and time tracker');

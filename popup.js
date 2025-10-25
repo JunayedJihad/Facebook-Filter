@@ -1,5 +1,6 @@
 // Default settings
 const defaultSettings = {
+  showTimer: true,
   grayscale: true,
   reels: true,
   stories: true,
