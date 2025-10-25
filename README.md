@@ -73,11 +73,3 @@ Stored on your device only:
 - `alarms` - Reset timer at midnight
 
 **100% Private. 100% Local. 100% Free.**
-
----
-
-## 📝 Project Info
-
-**Developer:** Me with Claude.Ai
-**Last Updated:** October 26, 2025
-**Contact:** junayedjihad48@gmail.com
