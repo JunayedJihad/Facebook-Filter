@@ -61,10 +61,10 @@ function createTimer() {
   timerElement = document.createElement('div');
   timerElement.id = 'fb-time-tracker';
   timerElement.innerHTML = `
-
+   
     <div class="timer-text">
       <span class="timer-label">Time Today</span>
-      <span class="timer-value">00:00:00</span>
+      <span class="timer-value">0:00:00</span>
     </div>
   `;
   document.body.appendChild(timerElement);
@@ -156,141 +156,198 @@ function applyGrayscale() {
   }
 }
 
-function hideContent() {
-  // Hide Reels
+// Apply CSS class for hiding reels
+function applyReelsHiding() {
   if (settings.reels) {
-    const reelsContainers = document.querySelectorAll('div[role="article"], div[data-pagelet*="FeedUnit"]');
-    reelsContainers.forEach(container => {
-      const text = container.innerText || container.textContent || '';
-      const links = container.querySelectorAll('a');
+    document.documentElement.classList.add('fb-hide-reels');
+  } else {
+    document.documentElement.classList.remove('fb-hide-reels');
+  }
+}
 
-      if (text.includes('Reels') || text.includes('reel')) {
-        container.style.display = 'none';
-        return;
+// Check if element contains text
+function containsText(element, keywords) {
+  try {
+    const text = element.textContent || element.innerText || '';
+    for (let keyword of keywords) {
+      if (text.includes(keyword)) {
+        return true;
       }
+    }
+  } catch (e) {
+    // Ignore errors
+  }
+  return false;
+}
 
-      links.forEach(link => {
-        if (link.href && (link.href.includes('/reel/') || link.href.includes('/reels'))) {
-          container.style.display = 'none';
-        }
-      });
-    });
+function hideContent() {
+  // Hide Reels section with JavaScript as backup to CSS
+  if (settings.reels) {
+    // Find and hide all elements that contain "Reels" text exactly
+    document.querySelectorAll('*').forEach(el => {
+      // Skip if already processed or if it's our timer
+      if (el.id === 'fb-time-tracker' || el.hasAttribute('data-fb-checked')) return;
 
-    const reelsSelectors = [
-      '[aria-label*="Reels"]',
-      '[aria-label*="reel" i]',
-      'div[data-pagelet*="reel" i]',
-      'a[href*="/reel/"]',
-      'a[href*="/reels"]'
-    ];
-
-    reelsSelectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(el => {
-        let parent = el.closest('[role="article"]') ||
-                     el.closest('div[data-pagelet*="FeedUnit"]') ||
-                     el.closest('div[class*="userContentWrapper"]');
-        if (parent) {
-          parent.style.display = 'none';
-        } else {
-          let currentEl = el;
-          for (let i = 0; i < 5; i++) {
-            if (currentEl) {
-              currentEl.style.display = 'none';
-              currentEl = currentEl.parentElement;
-            }
+      // Check direct text content only (not nested)
+      let hasReelsText = false;
+      for (let node of el.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent.trim();
+          if (text === 'Reels' || text === 'reel') {
+            hasReelsText = true;
+            break;
           }
         }
-      });
+      }
+
+      if (hasReelsText) {
+        // Find parent container
+        let container = el;
+        for (let i = 0; i < 10; i++) {
+          if (!container.parentElement) break;
+          container = container.parentElement;
+
+          // Check if this is a major container
+          const role = container.getAttribute('role');
+          const hasPagelet = container.hasAttribute('data-pagelet');
+
+          if (role === 'article' || hasPagelet || container.tagName === 'SECTION') {
+            container.style.display = 'none';
+            container.setAttribute('data-reel-hidden', 'true');
+            break;
+          }
+        }
+      }
+
+      el.setAttribute('data-fb-checked', 'true');
+    });
+
+    // Hide any link to reels
+    document.querySelectorAll('a[href*="/reel/"], a[href*="/reels"]').forEach(link => {
+      let container = link;
+      for (let i = 0; i < 10; i++) {
+        if (!container.parentElement) break;
+        container = container.parentElement;
+
+        const role = container.getAttribute('role');
+        if (role === 'article' || container.hasAttribute('data-pagelet')) {
+          if (!container.hasAttribute('data-reel-hidden')) {
+            container.style.display = 'none';
+            container.setAttribute('data-reel-hidden', 'true');
+          }
+          break;
+        }
+      }
     });
   }
 
   // Hide Stories
   if (settings.stories) {
-    const storiesSelectors = [
-      '[aria-label*="Stories"]',
-      '[aria-label*="story" i]',
-      'div[data-pagelet*="story" i]',
-      'div[role="region"][aria-label*="Stories"]'
-    ];
+    document.querySelectorAll('[aria-label*="Stories"], [aria-label*="Create a story"]').forEach(el => {
+      if (el.hasAttribute('data-story-hidden')) return;
 
-    storiesSelectors.forEach(selector => {
-      document.querySelectorAll(selector).forEach(el => {
-        el.style.display = 'none';
-      });
+      let container = el.closest('[role="region"]') || el.closest('div[data-pagelet]');
+      if (container) {
+        container.style.display = 'none';
+        container.setAttribute('data-story-hidden', 'true');
+      }
+    });
+
+    document.querySelectorAll('*').forEach(el => {
+      if (el.hasAttribute('data-story-checked')) return;
+
+      for (let node of el.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() === 'Stories') {
+          let container = el;
+          for (let i = 0; i < 10; i++) {
+            if (!container.parentElement) break;
+            container = container.parentElement;
+
+            if (container.getAttribute('role') === 'region' || container.hasAttribute('data-pagelet')) {
+              container.style.display = 'none';
+              container.setAttribute('data-story-hidden', 'true');
+              break;
+            }
+          }
+          break;
+        }
+      }
+
+      el.setAttribute('data-story-checked', 'true');
     });
   }
 
-  // Hide "Suggested for you" sections
+  // Hide "Suggested for you" posts
   if (settings.suggested) {
-    document.querySelectorAll('[role="article"], div[data-pagelet*="FeedUnit"]').forEach(container => {
-      const text = container.innerText || container.textContent || '';
-      if (text.includes('Suggested for you') || text.includes('Suggested posts')) {
-        container.style.display = 'none';
+    document.querySelectorAll('[role="article"]').forEach(article => {
+      if (article.hasAttribute('data-suggested-hidden')) return;
+
+      if (containsText(article, ['Suggested for you', 'Suggested posts'])) {
+        article.style.display = 'none';
+        article.setAttribute('data-suggested-hidden', 'true');
       }
     });
   }
 
   // Hide "People you may know" sections
   if (settings.peopleYouMayKnow) {
-    document.querySelectorAll('[role="article"], div[data-pagelet*="FeedUnit"]').forEach(container => {
-      const text = container.innerText || container.textContent || '';
-      if (text.includes('People you may know') || text.includes('People You May Know')) {
-        container.style.display = 'none';
-      }
-    });
+    document.querySelectorAll('[role="article"]').forEach(article => {
+      if (article.hasAttribute('data-pymk-hidden')) return;
 
-    // Also hide by aria-label
-    document.querySelectorAll('[aria-label*="People you may know"], [aria-label*="People You May Know"]').forEach(el => {
-      let parent = el.closest('[role="article"]') || el.closest('div[data-pagelet]');
-      if (parent) {
-        parent.style.display = 'none';
-      } else {
-        el.style.display = 'none';
+      if (containsText(article, ['People you may know', 'People You May Know'])) {
+        article.style.display = 'none';
+        article.setAttribute('data-pymk-hidden', 'true');
       }
     });
   }
 
-  // Hide ALL navigation links based on settings
-  document.querySelectorAll('a').forEach(link => {
-    const href = link.href || '';
-    const ariaLabel = link.getAttribute('aria-label') || '';
-    const text = link.innerText || link.textContent || '';
+  // Hide navigation items
+  if (!document.body.hasAttribute('data-nav-hidden')) {
+    const navAreas = document.querySelectorAll('[role="navigation"], nav, [data-pagelet*="LeftRail"]');
 
-    let shouldHide = false;
+    navAreas.forEach(navArea => {
+      navArea.querySelectorAll('a').forEach(link => {
+        const href = link.href || '';
+        const ariaLabel = link.getAttribute('aria-label') || '';
 
-    if (settings.marketplace && (href.includes('/marketplace') || ariaLabel.toLowerCase().includes('marketplace') || text.toLowerCase().includes('marketplace'))) {
-      shouldHide = true;
-    }
+        let shouldHide = false;
 
-    if (settings.watch && (href.includes('/watch') || ariaLabel.toLowerCase().includes('watch') || ariaLabel.toLowerCase().includes('video') || text.toLowerCase().includes('video'))) {
-      shouldHide = true;
-    }
-
-    if (settings.games && (href.includes('/games') || href.includes('/gaming') || ariaLabel.toLowerCase().includes('gaming') || ariaLabel.toLowerCase().includes('games') || text.toLowerCase().includes('gaming') || text.toLowerCase().includes('games'))) {
-      shouldHide = true;
-    }
-
-    if (shouldHide) {
-      // Hide the link
-      link.style.display = 'none';
-
-      // Hide parent containers (usually the nav item wrapper)
-      let parent = link.parentElement;
-      for (let i = 0; i < 3; i++) {
-        if (parent) {
-          parent.style.display = 'none';
-          parent = parent.parentElement;
+        if (settings.marketplace && href.includes('facebook.com/marketplace')) {
+          shouldHide = true;
         }
-      }
-    }
-  });
+
+        if (settings.watch && (href.includes('facebook.com/watch') || ariaLabel === 'Watch' || ariaLabel === 'Video')) {
+          shouldHide = true;
+        }
+
+        if (settings.games && (href.includes('facebook.com/games') || href.includes('facebook.com/gaming') || ariaLabel === 'Gaming' || ariaLabel === 'Games')) {
+          shouldHide = true;
+        }
+
+        if (shouldHide) {
+          let parent = link.parentElement;
+          if (parent) {
+            parent.style.display = 'none';
+          }
+        }
+      });
+    });
+
+    document.body.setAttribute('data-nav-hidden', 'true');
+  }
 }
 
 // Initialize
 loadSettings(() => {
   applyGrayscale();
-  hideContent();
+  applyReelsHiding();
   initializeTimer();
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hideContent);
+  } else {
+    hideContent();
+  }
 });
 
 // Listen for settings updates
@@ -298,24 +355,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'updateSettings') {
     loadSettings(() => {
       applyGrayscale();
+      applyReelsHiding();
       initializeTimer();
-      // Reload page for changes to take effect
       location.reload();
     });
   }
 });
 
-// Run when new content is loaded
+// More aggressive observer
 const observer = new MutationObserver(() => {
   hideContent();
 });
 
-observer.observe(document.body, {
-  childList: true,
-  subtree: true
-});
+setTimeout(() => {
+  const feedArea = document.querySelector('[role="main"]') || document.body;
+  observer.observe(feedArea, {
+    childList: true,
+    subtree: true
+  });
+}, 1000);
 
-// Run periodically as backup
+// Run frequently
 setInterval(hideContent, 1000);
 
 console.log('Facebook Content Hider: Active with custom settings and time tracker');
