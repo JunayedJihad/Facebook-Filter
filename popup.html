@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 320px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin: 0 0 20px 0;
+      font-size: 20px;
+      color: #333;
+      text-align: center;
+    }
+
+    .option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .option:last-child {
+      border-bottom: none;
+    }
+
+    .option-label {
+      font-size: 14px;
+      color: #444;
+      font-weight: 500;
+    }
+
+    .toggle {
+      position: relative;
+      width: 50px;
+      height: 26px;
+      background: #ccc;
+      border-radius: 13px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle.active {
+      background: #667eea;
+    }
+
+    .toggle-circle {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: left 0.3s;
+    }
+
+    .toggle.active .toggle-circle {
+      left: 27px;
+    }
+
+    .status {
+      margin-top: 16px;
+      padding: 10px;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 13px;
+      color: #166534;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚙️ Facebook Content Control</h1>
+
+    <div class="option">
+      <span class="option-label">Grayscale Mode</span>
+      <div class="toggle" data-option="grayscale">
+        <div class="toggle-circle"></div>
+      </div>
+    </div>
+
+    <div class="option">
+      <span class="option-label">Hide Reels</span>
+      <div class="toggle" data-option="reels">
+        <div class="toggle-circle"></div>
+      </div>
+    </div>
+
+    <div class="option">
+      <span class="option-label">Hide Stories</span>
+      <div class="toggle" data-option="stories">
+        <div class="toggle-circle"></div>
+      </div>
+    </div>
+
+    <div class="option">
+      <span class="option-label">Hide Marketplace</span>
+      <div class="toggle" data-option="marketplace">
+        <div class="toggle-circle"></div>
+      </div>
+    </div>
+
+    <div class="option">
+      <span class="option-label">Hide Watch/Video Tab</span>
+      <div class="toggle" data-option="watch">
+        <div class="toggle-circle"></div>
+      </div>
+    </div>
+
+    <div class="option">
+      <span class="option-label">Hide Gaming/Games</span>
+      <div class="toggle" data-option="games">
+        <div class="toggle-circle"></div>
+      </div>
+    </div>
+
+    <div class="option">
+      <span class="option-label">Hide "Suggested for you"</span>
+      <div class="toggle" data-option="suggested">
+        <div class="toggle-circle"></div>
+      </div>
+    </div>
+
+    <div class="option">
+      <span class="option-label">Hide "People you may know"</span>
+      <div class="toggle" data-option="peopleYouMayKnow">
+        <div class="toggle-circle"></div>
+      </div>
+    </div>
+
+    <div class="status" id="status">Settings saved! Refresh Facebook to apply.</div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

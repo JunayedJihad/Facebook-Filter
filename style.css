@@ -1,0 +1,5 @@
+/* Dynamic styles controlled by settings */
+html.fb-grayscale {
+  filter: grayscale(100%) !important;
+  -webkit-filter: grayscale(100%) !important;
+}

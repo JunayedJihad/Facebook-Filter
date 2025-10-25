@@ -1,0 +1,22 @@
+{
+     "manifest_version": 3,
+     "name": "Facebook Filter",
+     "version": "1.0.1",
+     "description": "Customize what to hide from Facebook newsfeed",
+     "permissions": ["storage", "activeTab"],
+     "action": {
+       "default_popup": "popup.html",
+       "default_icon": "icon.png"
+     },
+     "content_scripts": [
+       {
+         "matches": ["*://*.facebook.com/*"],
+         "js": ["content.js"],
+         "run_at": "document_end",
+         "css": ["style.css"]
+       }
+     ],
+     "icons": {
+       "48": "icon.png"
+     }
+   }
