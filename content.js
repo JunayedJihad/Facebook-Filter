@@ -181,25 +181,116 @@ function containsText(element, keywords) {
 }
 
 function hideContent() {
-  // Hide Sponsored Posts
+  // Hide Stories - COMPLETELY REMOVE from DOM (not just hide)
+  if (settings.stories) {
+    // Method 1: Remove by aria-label
+    document.querySelectorAll('[aria-label*="Stories"], [aria-label*="stories"], [aria-label*="Story"], [aria-label*="story"]').forEach(el => {
+      if (el.hasAttribute('data-story-removed')) return;
+
+      // Find the main container (usually the entire stories section)
+      let container = el;
+      for (let i = 0; i < 15; i++) {
+        if (!container.parentElement) break;
+        container = container.parentElement;
+
+        // Look for the stories region container
+        const role = container.getAttribute('role');
+        const ariaLabel = container.getAttribute('aria-label') || '';
+
+        if (role === 'region' ||
+            ariaLabel.toLowerCase().includes('stories') ||
+            container.hasAttribute('data-pagelet')) {
+          container.remove(); // REMOVE instead of hide
+          return; // Exit after removing
+        }
+      }
+
+      el.setAttribute('data-story-removed', 'true');
+    });
+
+    // Method 2: Remove by "Create story" button
+    document.querySelectorAll('a[href*="/stories/create"], [aria-label*="Create a story"], [aria-label*="Create story"]').forEach(el => {
+      if (el.hasAttribute('data-story-removed')) return;
+
+      let container = el;
+      for (let i = 0; i < 15; i++) {
+        if (!container.parentElement) break;
+        container = container.parentElement;
+
+        if (container.getAttribute('role') === 'region' || container.hasAttribute('data-pagelet')) {
+          container.remove(); // REMOVE instead of hide
+          return;
+        }
+      }
+
+      el.setAttribute('data-story-removed', 'true');
+    });
+
+    // Method 3: Find by text content "Stories"
+    document.querySelectorAll('h2, h3, h4, span, div').forEach(el => {
+      if (el.hasAttribute('data-story-text-checked')) return;
+
+      // Check if element directly contains "Stories" text
+      let hasStoriesText = false;
+      for (let node of el.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent.trim();
+          if (text === 'Stories' || text === 'Story' || text === 'stories') {
+            hasStoriesText = true;
+            break;
+          }
+        }
+      }
+
+      if (hasStoriesText) {
+        let container = el;
+        for (let i = 0; i < 15; i++) {
+          if (!container.parentElement) break;
+          container = container.parentElement;
+
+          if (container.getAttribute('role') === 'region' ||
+              container.hasAttribute('data-pagelet') ||
+              container.tagName === 'SECTION') {
+            if (!container.hasAttribute('data-story-removed')) {
+              container.remove(); // REMOVE instead of hide
+              return;
+            }
+          }
+        }
+      }
+
+      el.setAttribute('data-story-text-checked', 'true');
+    });
+
+    // Method 4: Remove story tray containers by structure
+    document.querySelectorAll('div[role="region"]').forEach(region => {
+      if (region.hasAttribute('data-story-removed')) return;
+
+      const regionText = region.textContent || '';
+      if (regionText.includes('Stories') || regionText.includes('Create a story')) {
+        region.remove(); // REMOVE instead of hide
+      }
+    });
+  }
+
+  // Hide Sponsored Posts - REMOVE from DOM
   if (settings.sponsored) {
     document.querySelectorAll('[role="article"]').forEach(article => {
-      if (article.hasAttribute('data-sponsored-hidden')) return;
+      if (article.hasAttribute('data-sponsored-removed')) return;
 
       // Look for "Sponsored" text in the post
       const sponsoredLinks = article.querySelectorAll('a[href*="/ads/"]');
       const hasSponsored = containsText(article, ['Sponsored', 'স্পন্সরড']);
 
       if (sponsoredLinks.length > 0 || hasSponsored) {
-        article.style.display = 'none';
-        article.setAttribute('data-sponsored-hidden', 'true');
+        article.remove(); // REMOVE instead of hide
       }
     });
   }
 
-  // Hide Reels section with JavaScript as backup to CSS
+  // Hide Reels section - REMOVE from DOM
   if (settings.reels) {
-    // Find and hide all elements that contain "Reels" text exactly
+    // Find and remove all elements that contain "Reels" text exactly
     document.querySelectorAll('*').forEach(el => {
       // Skip if already processed or if it's our timer
       if (el.id === 'fb-time-tracker' || el.hasAttribute('data-fb-checked')) return;
@@ -228,9 +319,8 @@ function hideContent() {
           const hasPagelet = container.hasAttribute('data-pagelet');
 
           if (role === 'article' || hasPagelet || container.tagName === 'SECTION') {
-            container.style.display = 'none';
-            container.setAttribute('data-reel-hidden', 'true');
-            break;
+            container.remove(); // REMOVE instead of hide
+            return;
           }
         }
       }
@@ -238,7 +328,7 @@ function hideContent() {
       el.setAttribute('data-fb-checked', 'true');
     });
 
-    // Hide any link to reels
+    // Remove any link to reels
     document.querySelectorAll('a[href*="/reel/"], a[href*="/reels"]').forEach(link => {
       let container = link;
       for (let i = 0; i < 10; i++) {
@@ -247,72 +337,33 @@ function hideContent() {
 
         const role = container.getAttribute('role');
         if (role === 'article' || container.hasAttribute('data-pagelet')) {
-          if (!container.hasAttribute('data-reel-hidden')) {
-            container.style.display = 'none';
-            container.setAttribute('data-reel-hidden', 'true');
+          if (!container.hasAttribute('data-reel-removed')) {
+            container.remove(); // REMOVE instead of hide
+            return;
           }
-          break;
         }
       }
     });
   }
 
-  // Hide Stories
-  if (settings.stories) {
-    document.querySelectorAll('[aria-label*="Stories"], [aria-label*="Create a story"]').forEach(el => {
-      if (el.hasAttribute('data-story-hidden')) return;
-
-      let container = el.closest('[role="region"]') || el.closest('div[data-pagelet]');
-      if (container) {
-        container.style.display = 'none';
-        container.setAttribute('data-story-hidden', 'true');
-      }
-    });
-
-    document.querySelectorAll('*').forEach(el => {
-      if (el.hasAttribute('data-story-checked')) return;
-
-      for (let node of el.childNodes) {
-        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() === 'Stories') {
-          let container = el;
-          for (let i = 0; i < 10; i++) {
-            if (!container.parentElement) break;
-            container = container.parentElement;
-
-            if (container.getAttribute('role') === 'region' || container.hasAttribute('data-pagelet')) {
-              container.style.display = 'none';
-              container.setAttribute('data-story-hidden', 'true');
-              break;
-            }
-          }
-          break;
-        }
-      }
-
-      el.setAttribute('data-story-checked', 'true');
-    });
-  }
-
-  // Hide "Suggested for you" posts
+  // Hide "Suggested for you" posts - REMOVE from DOM
   if (settings.suggested) {
     document.querySelectorAll('[role="article"]').forEach(article => {
-      if (article.hasAttribute('data-suggested-hidden')) return;
+      if (article.hasAttribute('data-suggested-removed')) return;
 
       if (containsText(article, ['Suggested for you', 'Suggested posts'])) {
-        article.style.display = 'none';
-        article.setAttribute('data-suggested-hidden', 'true');
+        article.remove(); // REMOVE instead of hide
       }
     });
   }
 
-  // Hide "People you may know" sections
+  // Hide "People you may know" sections - REMOVE from DOM
   if (settings.peopleYouMayKnow) {
     document.querySelectorAll('[role="article"]').forEach(article => {
-      if (article.hasAttribute('data-pymk-hidden')) return;
+      if (article.hasAttribute('data-pymk-removed')) return;
 
       if (containsText(article, ['People you may know', 'People You May Know'])) {
-        article.style.display = 'none';
-        article.setAttribute('data-pymk-hidden', 'true');
+        article.remove(); // REMOVE instead of hide
       }
     });
   }
